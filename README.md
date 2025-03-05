@@ -17,7 +17,7 @@
 This is a deployed website that does not require any installation to be viewed by a user.
 
 ## Usage
-Once you open the website, you will be able to search for the weather by typing any city name in the search bar on the left side and clicking the search button. A list of the cities you search for will be saved in the search history for future use.
+Click on the deploy link below to open the application. You can search for the weather by typing any city name in the search bar on the left side and clicking the search button. The cities you search for will be saved in the search history for future use, and you can delete them from the list at any time.
 
 ## Mock-Up
 The following images show the web application's appearance and functionality:
