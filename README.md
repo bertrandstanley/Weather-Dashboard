@@ -7,6 +7,8 @@
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
+- [Mock-Up](#mock-up)
+- [Deployed URL](#deployed-url)
 - [License](#license)
 - [Contributing](#contributing)
 - [Questions](#questions)
@@ -15,7 +17,18 @@
 This is a deployed website that does not require any installation to be viewed by a user.
 
 ## Usage
-Once you open the website, on the left side you will be able to search for the weather by TBC............
+Once you open the website, you will be able to search for the weather by typing any city name in the search bar on the left side and clicking the search button. A list of the cities you search for will be saved in the search history for future use.
+
+## Mock-Up
+The following images show the web application's appearance and functionality:
+
+![alt text](<Screenshot 2025-03-04 at 9.36.21 PM.png>)
+
+![alt text](<Screenshot 2025-03-04 at 9.38.12 PM.png>)
+
+## Deployed URL
+
+[Click Here]() to view the live version of the app. 
 
 ## License
 
