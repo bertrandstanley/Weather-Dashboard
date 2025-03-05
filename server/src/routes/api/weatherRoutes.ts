@@ -17,6 +17,7 @@ router.post('/weather/', async (req: Request, res: Response) => {
 
     // Get weather data from OpenWeather API
     const weatherData = await WeatherService.getWeatherForCity(cityName);
+    console.log(weatherData?.forecast);
     // Save city to search history
     await HistoryService.addCity(cityName);
     // Send weather data to client with 200 OK status

@@ -2,7 +2,7 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Description
-This is my portfolio, where I showcase all my projects and skills, which will help you get to know me better. This portfolio has been developed with Vite, React, and JavaScript.
+**Weather Dashboard** is a user-friendly web application that provides real-time weather information for any city. It fetches weather data from the OpenWeather API and displays the current weather along with a 5-day forecast, including temperature, humidity, wind speed, and weather conditions. Users can easily search for a city and view the weather data presented in an intuitive, visually appealing interface. The dashboard updates dynamically, ensuring users receive accurate and timely weather insights.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -12,10 +12,10 @@ This is my portfolio, where I showcase all my projects and skills, which will he
 - [Questions](#questions)
 
 ## Installation
-This is a deployed website that does not require any installation to be viewed.
+This is a deployed website that does not require any installation to be viewed by a user.
 
 ## Usage
-Once you open the website, explore all the pages, view my projects in the portfolio, download my resume for more details, and feel free to contact me if needed.
+Once you open the website, on the left side you will be able to search for the weather by TBC............
 
 ## License
 

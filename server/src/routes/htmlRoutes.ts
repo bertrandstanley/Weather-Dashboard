@@ -14,4 +14,5 @@ router.get('*', (_req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../../../client/dist/index.html'));
 });
 
+// Export the router for use in other parts of the application
 export default router;

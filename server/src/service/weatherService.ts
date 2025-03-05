@@ -1,4 +1,3 @@
-// Import required modules for API requests, date handling, and environment variable management
 import axios from 'axios';
 import dayjs, { type Dayjs } from 'dayjs';
 import dotenv from 'dotenv';
@@ -6,14 +5,12 @@ import dotenv from 'dotenv';
 // Load environment variables from .env file
 dotenv.config(); 
 
-// Ensure the OpenWeather API key is present in environment variables
-console.log(process.env.OPENWEATHER_API_KEY);
-
+// Check if the API key is available in environment variables
 if (!process.env.OPENWEATHER_API_KEY) {
   throw new Error('OPENWEATHER_API_KEY is not set in environment variables');
 }
 
-// Define TypeScript interfaces for coordinates and weather API response structure
+// Interface to represent the structure of location coordinates
 interface Coordinates {
   name: string;
   lat: number;
@@ -22,6 +19,7 @@ interface Coordinates {
   state?: string;
 }
 
+// Interface to represent the structure of the API response for weather data
 interface WeatherApiResponse {
   city: { name: string };
   list: {
@@ -32,7 +30,7 @@ interface WeatherApiResponse {
   }[];
 }
 
-// Weather class to structure weather data for frontend
+// Weather class to structure weather data for frontend display
 class Weather {
   city: string;
   date: Dayjs | string;
@@ -42,7 +40,7 @@ class Weather {
   icon: string;
   iconDescription: string;
 
-  // Constructor to initialize weather properties
+  // Constructor to initialize the Weather class with the required data
   constructor(
     city: string,
     date: Dayjs | string,
@@ -62,36 +60,32 @@ class Weather {
   }
 }
 
-// WeatherService class to handle API requests and manage weather data
+// Service class to interact with OpenWeather API
 class WeatherService {
-  private baseURL: string;
-  private apiKey: string;
+  private baseURL: string; // Base URL for the API requests
+  private apiKey: string; // API key for authentication
 
   // Constructor to initialize base URL and API key
   constructor(apiKey: string = process.env.OPENWEATHER_API_KEY || '') {
-    this.baseURL = 'https://api.openweathermap.org';
-
-    if (!apiKey) {
-      throw new Error('OPENWEATHER_API_KEY is not set in environment variables');
-    }
-
-    this.apiKey = apiKey;
+    this.baseURL = 'https://api.openweathermap.org'; // Set the base URL for API
+    this.apiKey = apiKey; // Use the provided or environment-based API key
   }
 
-  // Private method to fetch location data based on a city name
+  // Private method to fetch location data based on the city name
   private async fetchLocationData(query: string): Promise<Coordinates | null> {
     try {
+      // Build the URL for location data request
       const url = `${this.baseURL}/geo/1.0/direct?q=${query}&limit=1&appid=${this.apiKey}`;
-      const response = await axios.get(url);
-      if (!response.data[0]) return null;
-      return this.destructureLocationData(response.data[0]);
+      const response = await axios.get(url); // Make the GET request
+      if (!response.data[0]) return null; // If no data, return null
+      return this.destructureLocationData(response.data[0]); // Return structured location data
     } catch (error) {
-      console.error('Error fetching location data:', error);
-      return null;
+      console.error('Error fetching location data:', error); // Handle errors
+      return null; // Return null if an error occurs
     }
   }
 
-  // Helper method to destructure location data into the Coordinates interface
+  // Private method to extract and return the relevant coordinates data
   private destructureLocationData(locationData: any): Coordinates {
     return {
       name: locationData.name,
@@ -102,98 +96,105 @@ class WeatherService {
     };
   }
 
-  // Method to build the weather API query URL based on coordinates
+  // Private method to build the query string for fetching weather data based on coordinates
   private buildWeatherQuery(coordinates: Coordinates): string {
     return `${this.baseURL}/data/2.5/forecast?lat=${coordinates.lat}&lon=${coordinates.lon}&appid=${this.apiKey}&units=imperial`;
   }
 
-  // Private method to fetch weather data for the given coordinates
+  // Private method to fetch weather data based on the coordinates of the location
   private async fetchWeatherData(coordinates: Coordinates): Promise<WeatherApiResponse | null> {
     try {
-      const url = this.buildWeatherQuery(coordinates);
-      const response = await axios.get<WeatherApiResponse>(url);
-      return response.data;
+      const url = this.buildWeatherQuery(coordinates); // Build weather data URL
+      const response = await axios.get<WeatherApiResponse>(url); // Fetch weather data
+      return response.data; // Return the weather data response
     } catch (error) {
-      console.error('Error fetching weather data:', error);
-      return null;
+      console.error('Error fetching weather data:', error); // Handle errors
+      return null; // Return null if an error occurs
     }
   }
 
-  // Method to parse the weather API response and create a Weather instance for current weather
+  // Private method to parse and transform the current weather data into a Weather object
   private parseCurrentWeather(response: WeatherApiResponse): Weather {
-    const current = response.list[0];
+    const current = response.list[0]; // Get the first weather entry (current weather)
     return new Weather(
-      response.city.name,
-      dayjs.unix(current.dt).format('MM/DD/YYYY'),
-      current.main.temp,
-      current.wind.speed,
-      current.main.humidity,
-      current.weather[0].icon,
-      current.weather[0].description
+      response.city.name, // City name
+      dayjs.unix(current.dt).format('MM/DD/YYYY'), // Format the date
+      current.main.temp, // Temperature in Fahrenheit
+      current.wind.speed, // Wind speed
+      current.main.humidity, // Humidity percentage
+      current.weather[0].icon, // Weather icon code
+      current.weather[0].description // Weather description
     );
   }
 
-// Builds a 5-day forecast array starting with the current day, adding one entry per subsequent day from the 3-hour interval weather data.
   private buildForecastArray(currentWeather: Weather, weatherData: WeatherApiResponse['list']): Weather[] {
-    const forecastArray: Weather[] = [currentWeather];
-    let currentDay = dayjs.unix(weatherData[0].dt).startOf('day'); // Start of the day (midnight)
-    
-    // Loop through the weather data to build the forecast for the next 5 days
-    let forecastCount = 0;
-    
-    // Iterate over the weather data, starting from the second entry
-    for (let i = 1; i < weatherData.length; i++) {
-      const forecast = weatherData[i];
-      const forecastDate = dayjs.unix(forecast.dt).startOf('day'); // Get the start of the day (midnight)
-      
-      // If the forecast date is a new day (not the same day as the previous one), add it to the forecast
-      if (!forecastDate.isSame(currentDay, 'day')) {
-        forecastArray.push(
-          new Weather(
-            currentWeather.city,
-            forecastDate.format('MM/DD/YYYY'), // Format the date as MM/DD/YYYY
-            forecast.main.temp,
-            forecast.wind.speed,
-            forecast.main.humidity,
-            forecast.weather[0].icon,
-            forecast.weather[0].description
-          )
-        );
-        forecastCount++;
-        
-        // Update the currentDay to the next forecast date
-        currentDay = forecastDate;
-        
-        // If we've already gathered 5 forecast entries, stop collecting
-        if (forecastCount >= 5) {
-          break;
-        }
-      }
-    }
-  
-    return forecastArray;
-  }
+    const forecastArray: Weather[] = [currentWeather]; // Start with the current weather
 
-  // Public method to get the current weather and forecast for a specific city
+    // Log the weather data to debug
+    console.log('Weather Data Received:', weatherData);
+
+    // Target one data point per day, starting from tomorrow (using 8 intervals for midday)
+    for (let i = 8; i < weatherData.length && forecastArray.length < 6; i += 8) {
+        const forecast = weatherData[i];
+        
+        // Debug the timestamp
+        console.log('Forecast Timestamp:', forecast.dt, 'Formatted Date:', dayjs.unix(forecast.dt).format('MM/DD/YYYY'));
+
+        forecastArray.push(
+            new Weather(
+                currentWeather.city,
+                dayjs.unix(forecast.dt).format('MM/DD/YYYY'), // Format the forecast date
+                forecast.main.temp,
+                forecast.wind.speed,
+                forecast.main.humidity,
+                forecast.weather[0].icon,
+                forecast.weather[0].description
+            )
+        );
+    }
+
+    // Ensure we always return exactly 5 days + current (6 total elements)
+    while (forecastArray.length < 6 && weatherData.length > 0) {
+        const lastForecast = weatherData[weatherData.length - 1];
+        const nextDate = dayjs.unix(lastForecast.dt).add(forecastArray.length - 1, 'day');
+        console.log('Fallback Date:', nextDate.format('MM/DD/YYYY'));
+
+        forecastArray.push(
+            new Weather(
+                currentWeather.city,
+                nextDate.format('MM/DD/YYYY'),
+                lastForecast.main.temp,
+                lastForecast.wind.speed,
+                lastForecast.main.humidity,
+                lastForecast.weather[0].icon,
+                lastForecast.weather[0].description
+            )
+        );
+    }
+
+    return forecastArray.slice(0, 6); // Return exactly 6 elements (current + 5 days)
+}
+
+  // Main method to get the current weather and forecast for a given city
   async getWeatherForCity(city: string): Promise<{ current: Weather; forecast: Weather[] } | null> {
-    const locationData = await this.fetchLocationData(city);
+    const locationData = await this.fetchLocationData(city); // Fetch location data for the city
     if (!locationData) {
-      console.error('City not found');
+      console.error('City not found'); // If no location data found, return null
       return null;
     }
-    
-    const weatherData = await this.fetchWeatherData(locationData);
-    if (!weatherData) return null;
-    
-    const currentWeather = this.parseCurrentWeather(weatherData);
-    const forecast = this.buildForecastArray(currentWeather, weatherData.list);
-    
+
+    const weatherData = await this.fetchWeatherData(locationData); // Fetch weather data using the location coordinates
+    if (!weatherData) return null; // If no weather data available, return null
+
+    const currentWeather = this.parseCurrentWeather(weatherData); // Parse current weather data
+    const forecast = this.buildForecastArray(currentWeather, weatherData.list); // Build the forecast array
+
     return {
-      current: currentWeather,
-      forecast: forecast,
+      current: currentWeather, // Return current weather data
+      forecast: forecast, // Return forecast data
     };
   }
 }
 
-// Export the instance of WeatherService to be used in other parts of the application
+// Export an instance of the WeatherService class
 export default new WeatherService();
