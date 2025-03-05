@@ -40,7 +40,6 @@ class Weather {
   icon: string;
   iconDescription: string;
 
-  // Constructor to initialize the Weather class with the required data
   constructor(
     city: string,
     date: Dayjs | string,
@@ -65,7 +64,6 @@ class WeatherService {
   private baseURL: string; // Base URL for the API requests
   private apiKey: string; // API key for authentication
 
-  // Constructor to initialize base URL and API key
   constructor(apiKey: string = process.env.OPENWEATHER_API_KEY || '') {
     this.baseURL = 'https://api.openweathermap.org'; // Set the base URL for API
     this.apiKey = apiKey; // Use the provided or environment-based API key
@@ -74,7 +72,6 @@ class WeatherService {
   // Private method to fetch location data based on the city name
   private async fetchLocationData(query: string): Promise<Coordinates | null> {
     try {
-      // Build the URL for location data request
       const url = `${this.baseURL}/geo/1.0/direct?q=${query}&limit=1&appid=${this.apiKey}`;
       const response = await axios.get(url); // Make the GET request
       if (!response.data[0]) return null; // If no data, return null
@@ -134,46 +131,46 @@ class WeatherService {
     console.log('Weather Data Received:', weatherData);
 
     // Target one data point per day, starting from tomorrow (using 8 intervals for midday)
-    for (let i = 8; i < weatherData.length && forecastArray.length < 6; i += 8) {
-        const forecast = weatherData[i];
-        
-        // Debug the timestamp
-        console.log('Forecast Timestamp:', forecast.dt, 'Formatted Date:', dayjs.unix(forecast.dt).format('MM/DD/YYYY'));
+    for (let i = 8; i < weatherData.length && forecastArray.length < 3; i += 8) { // Limit to 2 forecast days
+      const forecast = weatherData[i];
+      
+      // Debug the timestamp
+      console.log('Forecast Timestamp:', forecast.dt, 'Formatted Date:', dayjs.unix(forecast.dt).format('MM/DD/YYYY'));
 
-        forecastArray.push(
-            new Weather(
-                currentWeather.city,
-                dayjs.unix(forecast.dt).format('MM/DD/YYYY'), // Format the forecast date
-                forecast.main.temp,
-                forecast.wind.speed,
-                forecast.main.humidity,
-                forecast.weather[0].icon,
-                forecast.weather[0].description
-            )
-        );
+      forecastArray.push(
+        new Weather(
+          currentWeather.city,
+          dayjs.unix(forecast.dt).format('MM/DD/YYYY'), // Format the forecast date
+          forecast.main.temp,
+          forecast.wind.speed,
+          forecast.main.humidity,
+          forecast.weather[0].icon,
+          forecast.weather[0].description
+        )
+      );
     }
 
-    // Ensure we always return exactly 5 days + current (6 total elements)
-    while (forecastArray.length < 6 && weatherData.length > 0) {
-        const lastForecast = weatherData[weatherData.length - 1];
-        const nextDate = dayjs.unix(lastForecast.dt).add(forecastArray.length - 1, 'day');
-        console.log('Fallback Date:', nextDate.format('MM/DD/YYYY'));
+    // Ensure we always return exactly 3 elements (current + 2 days)
+    while (forecastArray.length < 3 && weatherData.length > 0) {
+      const lastForecast = weatherData[weatherData.length - 1];
+      const nextDate = dayjs.unix(lastForecast.dt).add(forecastArray.length - 1, 'day');
+      console.log('Fallback Date:', nextDate.format('MM/DD/YYYY'));
 
-        forecastArray.push(
-            new Weather(
-                currentWeather.city,
-                nextDate.format('MM/DD/YYYY'),
-                lastForecast.main.temp,
-                lastForecast.wind.speed,
-                lastForecast.main.humidity,
-                lastForecast.weather[0].icon,
-                lastForecast.weather[0].description
-            )
-        );
+      forecastArray.push(
+        new Weather(
+          currentWeather.city,
+          nextDate.format('MM/DD/YYYY'),
+          lastForecast.main.temp,
+          lastForecast.wind.speed,
+          lastForecast.main.humidity,
+          lastForecast.weather[0].icon,
+          lastForecast.weather[0].description
+        )
+      );
     }
 
-    return forecastArray.slice(0, 6); // Return exactly 6 elements (current + 5 days)
-}
+    return forecastArray.slice(0, 3); // Return exactly 3 elements (current + 2 days)
+  }
 
   // Main method to get the current weather and forecast for a given city
   async getWeatherForCity(city: string): Promise<{ current: Weather; forecast: Weather[] } | null> {
@@ -191,7 +188,7 @@ class WeatherService {
 
     return {
       current: currentWeather, // Return current weather data
-      forecast: forecast, // Return forecast data
+      forecast: forecast, // Return forecast data (current + 2 days)
     };
   }
 }

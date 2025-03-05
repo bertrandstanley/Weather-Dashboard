@@ -1,4 +1,3 @@
-// weatherRoutes.ts
 import { Router, type Request, type Response } from 'express';
 import HistoryService from '../../service/historyService.js';
 import WeatherService from '../../service/weatherService.js';
@@ -9,21 +8,28 @@ const router = Router();
 router.post('/weather/', async (req: Request, res: Response) => {
   try {
     const { cityName } = req.body;
-    // Validate city name is provided
     if (!cityName) {
-      // Return early with a 400 Bad Request response
       return res.status(400).json({ message: 'City name is required' });
     }
 
     // Get weather data from OpenWeather API
     const weatherData = await WeatherService.getWeatherForCity(cityName);
-    console.log(weatherData?.forecast);
+    if (!weatherData) {
+      return res.status(404).json({ message: 'City not found' });
+    }
+
+    // Log for debugging
+    console.log('Forecast Data:', weatherData.forecast);
+
+    // Transform to flat array: [current, day1, day2, day3, day4, day5]
+    const responseData = [weatherData.current, ...weatherData.forecast.slice(1)]; // Current + 5 days
+
     // Save city to search history
     await HistoryService.addCity(cityName);
-    // Send weather data to client with 200 OK status
-    return res.status(200).json(weatherData);
+
+    // Send weather data as a flat array
+    return res.status(200).json(responseData);
   } catch (error) {
-    // Handle any errors (e.g., API failure, city not found) with a 500 response
     return res.status(500).json({ 
       message: 'Error fetching weather data', 
       error: error instanceof Error ? error.message : String(error) 
@@ -34,12 +40,9 @@ router.post('/weather/', async (req: Request, res: Response) => {
 // GET /api/weather/history - Retrieve search history
 router.get('/history', async (_req: Request, res: Response) => {
   try {
-    // Get all saved cities from history
     const cities = await HistoryService.getCities();
-    // Send cities with 200 OK status
     return res.status(200).json(cities);
   } catch (err) {
-    // Handle errors with a 500 response
     return res.status(500).json({ 
       message: 'Error fetching history', 
       error: err instanceof Error ? err.message : String(err) 
@@ -51,12 +54,9 @@ router.get('/history', async (_req: Request, res: Response) => {
 router.delete('/history/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    // Remove city by ID from history
     await HistoryService.removeCity(id);
-    // Send 204 No Content on success
     return res.status(204).send();
   } catch (err) {
-    // Handle errors with a 500 response
     return res.status(500).json({ 
       message: 'Error deleting city', 
       error: err instanceof Error ? err.message : String(err) 

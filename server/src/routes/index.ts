@@ -1,4 +1,5 @@
 import express from 'express';
+import fetch from 'node-fetch';
 
 // Initialize the Express router
 const router = express.Router();
@@ -48,6 +49,8 @@ router.post('/weather/', async (req, res) => {
         humidity: item.main.humidity,
       })),
     ];
+
+    
 
     // Return the formatted weather data to the client
     return res.json(weatherData); // Explicit return

@@ -10,3 +10,4 @@ router.use('/api', weatherRoutes);
 router.use('/', htmlRoutes);
 
 export default router;
+

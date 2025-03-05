@@ -1870,7 +1870,7 @@ label form [type='radio'] {
 
 .history-btn {
   text-align: center;
-  display: inline-block;
+  display: block;
   padding: 0.5rem;
   /* margin-left: 0.5rem; */
   text-decoration: none;
@@ -1881,6 +1881,12 @@ label form [type='radio'] {
   color: #1a1a1a;
   background-color: #aeaeae;
   transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.history-btn:hover {
+  background-color: #999;
+  color: #fff;
+  cursor: pointer;
 }
 
 .search-button {

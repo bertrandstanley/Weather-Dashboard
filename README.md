@@ -22,9 +22,9 @@ Once you open the website, you will be able to search for the weather by typing 
 ## Mock-Up
 The following images show the web application's appearance and functionality:
 
-![alt text](<Screenshot 2025-03-04 at 9.36.21 PM.png>)
+![alt text](<Screenshot 2025-03-05 at 12.37.37 PM.png>)
 
-![alt text](<Screenshot 2025-03-04 at 9.38.12 PM.png>)
+![alt text](<Screenshot 2025-03-05 at 12.39.56 PM.png>)
 
 ## Deployed URL
 
